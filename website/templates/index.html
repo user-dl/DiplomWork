@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розклад занять</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Розклад занять</h1>
+
+        <!-- Кнопка перемикання теми з іконкою -->
+        <button id="theme-toggle" class="theme-button" title="Переключити тему">
+            <span class="theme-icon">☀️</span>
+        </button>
+
+        <!-- Статистика -->
+        {% if stats.total_lessons > 0 %}
+        <div class="stats">
+            <p>Усього занять: {{ stats.total_lessons }}</p>
+            <p>Лекцій: {{ stats.lectures }}</p>
+            <p>Лабораторних: {{ stats.labs }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Форма пошуку -->
+        <form method="POST" class="search-form">
+            <input type="text" name="search_query" placeholder="Введіть запит (напр., Іванов, КН-21)" value="{{ request.form.get('search_query', '') }}">
+            <select name="search_field">
+                <option value="all" {% if request.form.get('search_field') == 'all' %}selected{% endif %}>Усі поля</option>
+                <option value="teacher" {% if request.form.get('search_field') == 'teacher' %}selected{% endif %}>Викладач</option>
+                <option value="group" {% if request.form.get('search_field') == 'group' %}selected{% endif %}>Група/Підгрупа</option>
+                <option value="discipline" {% if request.form.get('search_field') == 'discipline' %}selected{% endif %}>Дисципліна</option>
+                <option value="classroom" {% if request.form.get('search_field') == 'classroom' %}selected{% endif %}>Аудиторія</option>
+            </select>
+            <select name="day_filter">
+                <option value="all" {% if request.form.get('day_filter') == 'all' %}selected{% endif %}>Усі дні</option>
+                <option value="Monday" {% if request.form.get('day_filter') == 'Monday' %}selected{% endif %}>Понеділок</option>
+                <option value="Tuesday" {% if request.form.get('day_filter') == 'Tuesday' %}selected{% endif %}>Вівторок</option>
+                <option value="Wednesday" {% if request.form.get('day_filter') == 'Wednesday' %}selected{% endif %}>Середа</option>
+                <option value="Thursday" {% if request.form.get('day_filter') == 'Thursday' %}selected{% endif %}>Четвер</option>
+                <option value="Friday" {% if request.form.get('day_filter') == 'Friday' %}selected{% endif %}>П'ятниця</option>
+            </select>
+            <button type="submit">Пошук</button>
+        </form>
+
+        <!-- Таблиця розкладу -->
+        {% if schedule %}
+        <table>
+            <thead>
+                <tr>
+                    <th><a href="?sort_by=Група/Підгрупа" class="{% if sort_by == 'Група/Підгрупа' %}active{% endif %}">Група/Підгрупа</a></th>
+                    <th><a href="?sort_by=Викладач" class="{% if sort_by == 'Викладач' %}active{% endif %}">Викладач</a></th>
+                    <th><a href="?sort_by=Аудиторія" class="{% if sort_by == 'Аудиторія' %}active{% endif %}">Аудиторія</a></th>
+                    <th><a href="?sort_by=Дисципліна" class="{% if sort_by == 'Дисципліна' %}active{% endif %}">Дисципліна</a></th>
+                    <th><a href="?sort_by=Тип заняття" class="{% if sort_by == 'Тип заняття' %}active{% endif %}">Тип заняття</a></th>
+                    <th><a href="?sort_by=Час" class="{% if sort_by == 'Час' %}active{% endif %}">Час</a></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in schedule %}
+                <tr>
+                    <td>{{ slot["Група/Підгрупа"] | safe }}</td>
+                    <td>{{ slot["Викладач"] | safe }}</td>
+                    <td>{{ slot["Аудиторія"] | safe }}</td>
+                    <td>{{ slot["Дисципліна"] | safe }}</td>
+                    <td>{{ slot["Тип заняття"] }}</td>
+                    <td>{{ slot["Час"] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Розклад не знайдено. Переконайтеся, що schedule.csv існує в директорії desktop_app.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Перемикання теми та іконки
+        const toggleButton = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        toggleButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            themeIcon.textContent = isDark ? '🌙' : '☀️';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeIcon.textContent = '🌙';
+        }
+    </script>
+</body>
+</html>

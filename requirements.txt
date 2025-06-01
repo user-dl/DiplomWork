@@ -1,0 +1,6 @@
+sqlalchemy==2.0.31
+deap==1.4.1
+PyQt5==5.15.9
+flask==3.0.3
+pandas==2.2.2
+numpy==1.26.4
